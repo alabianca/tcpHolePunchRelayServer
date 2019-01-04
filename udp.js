@@ -10,7 +10,7 @@ socket.on("listening", () => {
 
 socket.on("message", (msg,rinfo)=> {
     console.log("received message")
-    console.log(rinfo.address)
-})
+    console.log(rinfo.address, rinfo.port)
+});
 
 socket.bind(41234)
