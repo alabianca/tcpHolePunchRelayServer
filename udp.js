@@ -40,7 +40,7 @@ function handleMessage(socket,msg,rinfo) {
         
         case CONN_REQ:
             const conn = parseConnectionRequestPacket(msg);
-            response = conn ? createConnectionResponsePacket(ACK) : createConnectionResponsePacket(NAK);
+            response = conn ? createConnectionResponsePacket(ACK, conn) : createConnectionResponsePacket(NAK,conn);
             socket.send(response,rinfo.port,rinfo.address);
             break;
     }
@@ -70,6 +70,7 @@ function createSessionResponsePacket(AckNak) {
 function parseConnectionRequestPacket(packet) {
     const user = packet.slice(1).toString();
     console.log("Connection Request for: ", user)
+    console.log("Connection: ", connections[user].address)
     if(connections[user]) {
         return null
     }
@@ -88,7 +89,7 @@ function createConnectionResponsePacket(AckNak,connection) {
     larr[0] = parseInt(connection.port)
     const port = Buffer.from(larr.buffer).swap16()
     //encode the ip
-    const ipBytes = connection.family == "IPv4" ? encodeIpv4(connection.address) : encodeIpv6(connection.address);
+    const ipBytes = connection.family == "IPv4" ? encodeIpv4(connection.ip) : encodeIpv6(connection.ip);
 
     const ip = Buffer.from(ipBytes)
     
