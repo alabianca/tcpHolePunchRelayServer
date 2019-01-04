@@ -68,8 +68,8 @@ function createSessionResponsePacket(AckNak) {
 }
 
 function parseConnectionRequestPacket(packet) {
-    const user = packet.slice(1);
-
+    const user = packet.slice(1).toString();
+    console.log("Connection Request for: ", user)
     if(connections[user]) {
         return null
     }
