@@ -70,7 +70,7 @@ function createSessionResponsePacket(AckNak) {
 function parseConnectionRequestPacket(packet) {
     const user = packet.slice(1).toString();
     console.log("Connection Request for: ", user)
-    console.log("Connection: ", connections[user].address)
+    console.log("Connection: ", connections[user].ip)
     if(connections[user]) {
         return null
     }
@@ -80,7 +80,7 @@ function parseConnectionRequestPacket(packet) {
 
 function createConnectionResponsePacket(AckNak,connection) {
     const start = Buffer.from([CONN_REQ_RESPONSE,AckNak])
-
+    console.log("Creating connection response Packet for: ", connection)
     if(!connection) {
         return start
     }
