@@ -71,7 +71,7 @@ function parseConnectionRequestPacket(packet) {
     const user = packet.slice(1).toString();
     console.log("Connection Request for: ", user)
     console.log("Connection: ", connections[user].ip)
-    if(connections[user]) {
+    if(!connections[user]) {
         return null
     }
 
