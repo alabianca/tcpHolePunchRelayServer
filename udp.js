@@ -6,6 +6,7 @@ const CREATE_SESSION = 0x3C
 const CREATE_SESSION_RESPONSE = 0x3D
 const CONN_REQ = 0x3E
 const CONN_REQ_RESPONSE = 0x3F
+const CONN_FORWARD_REQ = 0x40
 const ACK = 6
 const NAK = 21
 
@@ -39,10 +40,19 @@ function handleMessage(socket,msg,rinfo) {
             break;
         
         case CONN_REQ:
-            const conn = parseConnectionRequestPacket(msg);
-            response = conn ? createConnectionResponsePacket(ACK, conn) : createConnectionResponsePacket(NAK,conn);
+            const connData = parseConnectionRequestPacket(msg);
+            response = conn ? createConnectionResponsePacket(ACK, connData.conn) : createConnectionResponsePacket(NAK,connData.conn);
             socket.send(response,rinfo.port,rinfo.address);
+            //forward the connection request
+            if(connections[connData.sender] && connData.conn) {
+                const otherClientConnection = connections[connData.sender];
+                const forwardRequestResponse = createforwardConnectionRequestPacket(otherClientConnection);
+
+                socket.send(forwardRequestResponse, connData.conn.port, connData.conn.ip);
+            }
+
             break;
+        
     }
 }
 
@@ -68,14 +78,21 @@ function createSessionResponsePacket(AckNak) {
 }
 
 function parseConnectionRequestPacket(packet) {
-    const user = packet.slice(1).toString();
+    const userLength = packet[1];
+    const user = packet.slice(2,userLength+2).toString();
     console.log("Connection Request for: ", user)
     console.log("Connection: ", connections[user].ip)
     if(!connections[user]) {
         return null
     }
 
-    return connections[user]
+    const senderLength = packet[2+userLength];
+    const sender = packet.slice(userLength+3).toString()
+
+    return {
+        conn:connections[user],
+        sender: sender
+    }
 }
 
 function createConnectionResponsePacket(AckNak,connection) {
@@ -93,6 +110,20 @@ function createConnectionResponsePacket(AckNak,connection) {
 
     const ip = Buffer.from(ipBytes)
     
+    return Buffer.concat([start,ip,port])
+}
+
+function createforwardConnectionRequestPacket(connection) {
+    const start = Buffer.from([CONN_FORWARD_REQ])
+    //encode the port
+    const larr = new Uint16Array(1)
+    larr[0] = parseInt(connection.port)
+    const port = Buffer.from(larr.buffer).swap16()
+    //encode the ip
+    const ipBytes = connection.family == "IPv4" ? encodeIpv4(connection.ip) : encodeIpv6(connection.ip);
+
+    const ip = Buffer.from(ipBytes)
+
     return Buffer.concat([start,ip,port])
 }
 
