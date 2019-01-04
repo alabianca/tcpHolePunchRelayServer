@@ -41,10 +41,10 @@ function handleMessage(socket,msg,rinfo) {
         
         case CONN_REQ:
             const connData = parseConnectionRequestPacket(msg);
-            response = conn ? createConnectionResponsePacket(ACK, connData.conn) : createConnectionResponsePacket(NAK,connData.conn);
+            response = connData ? createConnectionResponsePacket(ACK, connData.conn) : createConnectionResponsePacket(NAK,connData.conn);
             socket.send(response,rinfo.port,rinfo.address);
             //forward the connection request
-            if(connections[connData.sender] && connData.conn) {
+            if(connData && connections[connData.sender] && connData.conn) {
                 const otherClientConnection = connections[connData.sender];
                 const forwardRequestResponse = createforwardConnectionRequestPacket(otherClientConnection);
 
@@ -80,14 +80,14 @@ function createSessionResponsePacket(AckNak) {
 function parseConnectionRequestPacket(packet) {
     const userLength = packet[1];
     const user = packet.slice(2,userLength+2).toString();
-    console.log("Connection Request for: ", user)
-    console.log("Connection: ", connections[user].ip)
+    const senderLength = packet[2+userLength];
+    const sender = packet.slice(userLength+3).toString()
+
+    console.log(`Connection Request for: ${user} from: ${sender} `)
+
     if(!connections[user]) {
         return null
     }
-
-    const senderLength = packet[2+userLength];
-    const sender = packet.slice(userLength+3).toString()
 
     return {
         conn:connections[user],
