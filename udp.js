@@ -30,17 +30,17 @@ socket.on("message", (msg,rinfo)=> {
 
 function handleMessage(socket,msg,rinfo) {
     const opType = msg[0]
-
+    let response;
     switch (opType) {
         case CREATE_SESSION:
             const ok = storeConnection(msg,rinfo)
-            const response = ok ? createSessionResponsePacket(ACK) : createSessionResponsePacket(NAK);
+            response = ok ? createSessionResponsePacket(ACK) : createSessionResponsePacket(NAK);
             socket.send(response, rinfo.port, rinfo.address)
             break;
         
         case CONN_REQ:
             const conn = parseConnectionRequestPacket(msg);
-            const response = conn ? createConnectionResponsePacket(ACK) : createConnectionResponsePacket(NAK);
+            response = conn ? createConnectionResponsePacket(ACK) : createConnectionResponsePacket(NAK);
             socket.send(response,rinfo.port,rinfo.address);
             break;
     }
