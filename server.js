@@ -17,7 +17,7 @@ const ETX = 3
 
 server = net.createServer((socket) => {
 
-
+    console.log("Got a connection: ", socket.remoteAddress, socket.remotePort)
     const s = new Socket(socket)
 
     s.on("ready", (session) => {
