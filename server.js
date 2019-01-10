@@ -47,8 +47,10 @@ server = net.createServer((socket) => {
         const msg = Buffer.concat([start,body])
 
         s.send(msg)
+        
 
         if(peerSocket) {
+            s.send(createInitHolePunchPacket(peerSocket.remoteAddress,peerSocket.localPort))
             const msg = createInitHolePunchPacket(s.remoteAddress,s.localPort)
             pairs[peerSocket.uID] = s.uID
             peerSocket.send(msg)
